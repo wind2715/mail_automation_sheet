@@ -49,15 +49,4 @@ while True:
                                   body={"values": [["Done"]]}).execute()
     except KeyError:
         i -= 1
-print("ok")
-# try:
-#     i += 1
-#     receiver_mail = sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!B{i}").execute()["values"][0][0]
-#     sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
-#                           valueInputOption="USER_ENTERED", body={'values': [["NotDone"]]}).execute()
-#     if sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!C{i}").execute()["values"][0][0] == "NotDone":
-#         server.sendmail(user, receiver_mail, msg.as_string())
-#         sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
-#                               valueInputOption="USER_ENTERED", body={'values': [["Done"]]}).execute()
-# except KeyError:
-#     i -= 1
+
