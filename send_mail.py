@@ -12,33 +12,52 @@ port = 465
 context = ssl.create_default_context()
 
 # Lấy data từ sheet
-KEY_SHEET = "1uG-lkvhblM244hxKixw6KAkPQGwYiY2j360idHpfsgo"
-RANGE_SHEET = "Test!A1:A4"
+KEY_SHEET = ""
 sheet = get_datas()
 
 # Đăng nhập mail
 server = smtplib.SMTP_SSL(host, port, context=context)
 server.login(user, pass_work)
 
+
 # Content
-msg = MIMEMultipart()
-msg['From'] = user
-msg['Subject'] = "CHÓ TÙNG"
-with open('test.html', 'r', encoding='utf-8') as file:
-    test_html = file.read()
-msg.attach(MIMEText(test_html, 'html'))
+def send(receiver_mail, received_name):
+    msg = MIMEMultipart()
+    msg['From'] = user
+    msg['Subject'] = "THƯ MỜI THAM DỰ"
+    with open('test.html', 'r', encoding='utf-8') as file:
+        test_html = file.read()
+    test_html = test_html.replace("$NAME", received_name)
+    msg.attach(MIMEText(test_html, 'html'))
+    server.sendmail(user, receiver_mail, msg.as_string())
+
+
 i = 1
 while True:
+    i += 1
     time.sleep(1)
     try:
-        i += 1
         receiver_mail = sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!B{i}").execute()["values"][0][0]
-        sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
-                              valueInputOption="USER_ENTERED", body={'values': [["NotDone"]]}).execute()
-        if sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!C{i}").execute()["values"][0][0] == "NotDone":
-            server.sendmail(user, receiver_mail, msg.as_string())
-            sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
-                                  valueInputOption="USER_ENTERED", body={'values': [["Done"]]}).execute()
+        received_name = sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!C{i}").execute()["values"][0][0]
+        try:
+            status = sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!D{i}").execute()["values"][0][0]
+            if status == "Done":
+                continue
+        except KeyError:
+            send(receiver_mail, received_name)
+            sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!D{i}", valueInputOption="USER_ENTERED",
+                                  body={"values": [["Done"]]}).execute()
     except KeyError:
         i -= 1
 print("ok")
+# try:
+#     i += 1
+#     receiver_mail = sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!B{i}").execute()["values"][0][0]
+#     sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
+#                           valueInputOption="USER_ENTERED", body={'values': [["NotDone"]]}).execute()
+#     if sheet.values().get(spreadsheetId=KEY_SHEET, range=f"Test!C{i}").execute()["values"][0][0] == "NotDone":
+#         server.sendmail(user, receiver_mail, msg.as_string())
+#         sheet.values().update(spreadsheetId=KEY_SHEET, range=f"Test!C{i}",
+#                               valueInputOption="USER_ENTERED", body={'values': [["Done"]]}).execute()
+# except KeyError:
+#     i -= 1
